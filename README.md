@@ -1,0 +1,1 @@
+Find the checkout instructions in checkout.sh 
