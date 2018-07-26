@@ -255,20 +255,22 @@ phase2L1BTagAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
       // if TagInfo present
 
       //dummy check to be removed
-      for(auto string:jet->tagInfoLabels())
-	std::cout<<string<<std::endl;
+      //for(auto string:jet->tagInfoLabels())
+      //std::cout<<string<<std::endl;
 
-
-      std::string tagInfoString = "pfCombinedSecondaryVertexV2BJetTags";
+      
+      std::string tagInfoString = "impactParameter";
       if( jet->hasTagInfo(tagInfoString) ) 
 	{
 
-	  std::cout<<tagInfoString<<" found"<<std::endl;
+	  
 	  const CandIPTagInfo *ipTagInfo =  jet->tagInfoCandIP(tagInfoString);
 	  const Tracks & selectedTracks( ipTagInfo->selectedTracks() );
+	  std::cout<<"IP info "<<ipTagInfo->impactParameterData()[0].ip2d.value()<<std::endl;
+
 	}
       else
-	std::cout<<tagInfoString<<" not found"<<std::endl;
+	std::cout<<"jet does not have "<<tagInfoString<<std::endl;
 
       efficiencyTree->Fill();
    }
