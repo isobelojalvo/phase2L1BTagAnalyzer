@@ -5,5 +5,6 @@ L1BTagAnalyzer = cms.EDAnalyzer('phase2L1BTagAnalyzer',
                                 recoJets      = cms.InputTag("recoJets", "", "RECO"),
                                 #slimmedJets      = cms.InputTag("slimmedJets", "", "RECO"),
                                 packedCandidates = cms.InputTag("packedPFCandidates","","RECO"),
-                                L1TrackInputTag  = cms.InputTag("TTTracksFromTracklet", "Level1TTTracks")
+                                L1TrackInputTag  = cms.InputTag("TTTracksFromTracklet", "Level1TTTracks"),
+                                primaryVertices = cms.InputTag("offlineSlimmedPrimaryVertices","","RECO")
                                 )

@@ -117,6 +117,8 @@ class phase2L1BTagAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResourc
       edm::EDGetTokenT<std::vector<pat::PackedCandidate> > PackedCands_;
       edm::EDGetTokenT<EcalEBTrigPrimDigiCollection> ecalTPGBToken_;
 
+      edm::EDGetTokenT<reco::VertexCollection> primaryVertexToken_ ;
+      const  reco::Vertex  *pv;
   //const reco::IPTagInfo * toIPTagInfo(const pat::Jet & jet, const std::string & tagInfos);
   //const reco::SVTagInfo * toSVTagInfo(const pat::Jet & jet, const std::string & tagInfos);
 
@@ -152,7 +154,8 @@ class phase2L1BTagAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResourc
 phase2L1BTagAnalyzer::phase2L1BTagAnalyzer(const edm::ParameterSet& cfg):
   tracksToken_(consumes<TrackCollection>(cfg.getUntrackedParameter<edm::InputTag>("tracks"))),
   MiniJetsToken_(   consumes< vector<pat::Jet>     >(cfg.getParameter<edm::InputTag>("slimmedJets"))),
-  PackedCands_(     consumes< std::vector<pat::PackedCandidate> >(cfg.getParameter<edm::InputTag>("packedCandidates")))
+  PackedCands_(     consumes< std::vector<pat::PackedCandidate> >(cfg.getParameter<edm::InputTag>("packedCandidates"))),
+  primaryVertexToken_( consumes<reco::VertexCollection>(cfg.getParameter<edm::InputTag>("primaryVertices")))
   //l1TkJets_(),  //get L1 TK Jets
   //l1TkMuons_(),  //get L1 TK Muons
   //l1TkVertex()  //get L1 Vertex
@@ -201,6 +204,13 @@ phase2L1BTagAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    using namespace reco;
 
    typedef typename CandIPTagInfo::input_container Tracks;
+   
+   edm::Handle<vector<reco::Vertex> > primaryVertex;
+   iEvent.getByToken(primaryVertexToken_,primaryVertex);
+   bool pvFound = (primaryVertex->size() != 0);
+   if ( pvFound ) {
+     pv = &(*primaryVertex->begin());
+   }
 
   run   = iEvent.id().run();
   lumi  = iEvent.id().luminosityBlock();
@@ -232,7 +242,7 @@ phase2L1BTagAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    // get reco jets
   edm::Handle< std::vector<pat::Jet> > miniJets;
   if(!iEvent.getByToken( MiniJetsToken_, miniJets))
-    std::cout<<"No miniAOD particles found"<<std::endl;
+    std::cout<<"No miniAOD jets found"<<std::endl;
 
 
   for( std::vector<pat::Jet>::const_iterator jet = miniJets->begin(); jet != miniJets->end(); ++jet )
@@ -264,10 +274,18 @@ phase2L1BTagAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	{
 
 	  
-	  const CandIPTagInfo *ipTagInfo =  jet->tagInfoCandIP(tagInfoString);
-	  const Tracks & selectedTracks( ipTagInfo->selectedTracks() );
-	  std::cout<<"IP info "<<ipTagInfo->impactParameterData()[0].ip2d.value()<<std::endl;
+	  const TrackIPTagInfo *ipTagInfo =  jet->tagInfoTrackIP(tagInfoString);
+	  const edm::RefVector<std::vector<reco::Track> > selectedTracks( ipTagInfo->selectedTracks() );
+	  unsigned int trackSize = ipTagInfo->selectedTracks().size();
+	  //std::cout<<"selected tracks size "<<ipTagInfo->selectedTracks().size()<<std::endl;
 
+	  //find IP definition in RecoBTag/BTagTools/src/SignedTransverseImpactParameter.cc
+	  if(trackSize>0)
+	    {
+	      recoTk1IP = ipTagInfo->impactParameterData()[0].ip2d.value();
+	      std::cout<<"recoTk1IP "<<recoTk1IP<<std::endl;
+	      //recoTk1IP = ipTagInfo->selectedTracks().at(0).dxy(pv->position());
+	    }
 	}
       else
 	std::cout<<"jet does not have "<<tagInfoString<<std::endl;
