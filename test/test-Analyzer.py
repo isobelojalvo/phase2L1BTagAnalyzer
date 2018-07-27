@@ -17,12 +17,20 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('L1Trigger.TrackFindingTracklet.L1TrackletTracks_cff')
 
-
 process.load("RecoBTag.Configuration.RecoBTag_cff") # this loads all available b-taggers
+
+## Load the MessageLogger
+process.load("FWCore.MessageService.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 ## Events to process
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(50)
+)
+
+## Options and Output Report
+process.options   = cms.untracked.PSet(
+    wantSummary = cms.untracked.bool(True)
 )
 
 ## Input files
@@ -71,31 +79,6 @@ process.ak4PFJetsCHS = ak4PFJets.clone(src = 'pfCHS')
 
 #################################################
 
-## Clone the existing TagInfo configurations and adapt them to MiniAOD input
-process.MyImpactParameterTagInfos = process.pfImpactParameterTagInfos.clone(
-#    primaryVertex = cms.InputTag("offlineSlimmedPrimaryVertices"),
-    candidates = cms.InputTag("packedPFCandidates"),
-    jets = cms.InputTag("ak4PFJetsCHS") # use the above-defined PF jets as input
-)
-process.MySecondaryVertexTagInfos = process.pfSecondaryVertexTagInfos.clone(
-    trackIPTagInfos = cms.InputTag("MyImpactParameterTagInfos") # use the above IP TagInfos as input
-)
-
-## Clone the existing b-tagger configurations and use the above TagInfos as input
-process.MyTrackCountingHighEffBJetTags = process.pfTrackCountingHighEffBJetTags.clone(
-    tagInfos = cms.VInputTag(cms.InputTag("MyImpactParameterTagInfos"))
-)
-process.MySimpleSecondaryVertexHighEffBJetTags = process.pfSimpleSecondaryVertexHighEffBJetTags.clone(
-    tagInfos = cms.VInputTag(cms.InputTag("MySecondaryVertexTagInfos"))
-)
-
-## Output file
-process.out = cms.OutputModule("PoolOutputModule",
-    outputCommands = cms.untracked.vstring('keep *'), 
-    fileName = cms.untracked.string('outfile.root')
-)
-
-
 process.load('SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff')
 process.load('CalibCalorimetry.CaloTPG.CaloTPGTranscoder_cfi')
 
@@ -110,25 +93,15 @@ process.L1TrackTrigger_step = cms.Path(process.L1TrackletTracksWithAssociators)
 
 process.VertexProducer.l1TracksInputTag = cms.InputTag("TTTracksFromTracklet", "Level1TTTracks")
 
-
 process.L1simulation_step = cms.Path(process.SimL1Emulator)
+
+## Output file
+#process.out = cms.OutputModule("PoolOutputModule",
+#    outputCommands = cms.untracked.vstring('keep *'), 
+#    fileName = cms.untracked.string('outfile.root')
+#)
+
 process.endjob_step = cms.EndPath(process.endOfProcess)
-
-
-## Load the MessageLogger
-process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 1
-
-## Events to process
-process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(50)
-)
-
-## Options and Output Report
-process.options   = cms.untracked.PSet(
-    wantSummary = cms.untracked.bool(True)
-)
-
 
 #################################################
 ## Remake jets
@@ -142,29 +115,11 @@ process.ak4PFJetsCHS = ak4PFJets.clone(src = 'pfCHS')
 
 #################################################
 
-## Clone the existing TagInfo configurations and adapt them to MiniAOD input
-process.MyImpactParameterTagInfos = process.pfImpactParameterTagInfos.clone(
-    primaryVertex = cms.InputTag("offlineSlimmedPrimaryVertices"),
-    candidates = cms.InputTag("packedPFCandidates"),
-    jets = cms.InputTag("ak4PFJetsCHS") # use the above-defined PF jets as input
-)
-process.MySecondaryVertexTagInfos = process.pfSecondaryVertexTagInfos.clone(
-    trackIPTagInfos = cms.InputTag("MyImpactParameterTagInfos") # use the above IP TagInfos as input
-)
-
-## Clone the existing b-tagger configurations and use the above TagInfos as input
-process.MyTrackCountingHighEffBJetTags = process.pfTrackCountingHighEffBJetTags.clone(
-    tagInfos = cms.VInputTag(cms.InputTag("MyImpactParameterTagInfos"))
-)
-process.MySimpleSecondaryVertexHighEffBJetTags = process.pfSimpleSecondaryVertexHighEffBJetTags.clone(
-    tagInfos = cms.VInputTag(cms.InputTag("MySecondaryVertexTagInfos"))
-)
-
-## Output file
-process.out = cms.OutputModule("PoolOutputModule",
-    outputCommands = cms.untracked.vstring('keep *'), 
-    fileName = cms.untracked.string('outfile-2.root')
-)
+### Output file
+#process.out = cms.OutputModule("PoolOutputModule",
+#    outputCommands = cms.untracked.vstring('keep *'), 
+#    fileName = cms.untracked.string('outfile-2.root')
+#)
 
 # load the standard PAT config
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
@@ -179,13 +134,13 @@ addJetCollection(
                  explicitJTA = False,
                  svClustering = False,
                  #jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute']), 'Type-2'),
-                 btagInfos = ['impactParameterTagInfos','secondaryVertexTagInfos'],
-                 btagDiscriminators=['simpleSecondaryVertexHighEffBJetTags','simpleSecondaryVertexHighPurBJetTags']
+                 btagInfos = ['impactParameterTagInfos','secondaryVertexTagInfos','softPFMuonsTagInfos','softPFElectronsTagInfos'],
+                 btagDiscriminators=['simpleSecondaryVertexHighEffBJetTags','simpleSecondaryVertexHighPurBJetTags','softPFMuonBJetTags','softPFElectronBJetTags']
                  )
 
 process.unpackTV = cms.EDProducer('PATTrackAndVertexUnpacker',
  slimmedVertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
- additionalTracks= cms.InputTag("lostTracks"),
+ additionalTracks = cms.InputTag("lostTracks"),
  packedCandidates = cms.InputTag("packedPFCandidates"),
  slimmedSecondaryVertices = cms.InputTag("slimmedSecondaryVertices")
 )
@@ -213,13 +168,11 @@ process.patJetPartons = cms.EDProducer('HadronAndPartonSelector',
     fullChainPhysPartons = cms.bool(True)
 )
 
-#JetTracksAssociatorExplicit, jetTracksAssociatorAtVertexNewSlimmedJets
 process.jetTracksAssociatorAtVertexNewSlimmedJets.jets = cms.InputTag("ak4PFJetsCHS")
 process.jetTracksAssociatorAtVertexNewSlimmedJets.tracks = cms.InputTag("unpackTV")
 process.impactParameterTagInfosNewSlimmedJets.primaryVertex = cms.InputTag("unpackTV")
+## the key to adding the 
 process.patJetsNewSlimmedJets.addTagInfos = cms.bool(True)
-
-process.patJets = cms.Path(process.patJetsNewSlimmedJets)
 
 process.load("L1Trigger.phase2L1BTagAnalyzer.phase2L1BTagAnalyzer_cfi")
 process.L1BTagAnalyzer.slimmedJets = cms.InputTag("patJetsNewSlimmedJets")
@@ -227,32 +180,26 @@ process.L1BTagAnalyzer.slimmedJets = cms.InputTag("patJetsNewSlimmedJets")
 process.TFileService = cms.Service("TFileService", 
    fileName = cms.string("analyzer.root")
 )
-process.analyzer = cms.Path(process.L1BTagAnalyzer)
 
 ## Define a Path
 process.p = cms.Path(
     process.pfCHS
     * process.ak4PFJetsCHS
     * process.unpackTV
-#    * process.patJetChargeNewSlimmedJets
     * process.patJetPartonsLegacy
     * process.patJetPartonAssociationLegacy
     * process.patJetFlavourAssociationLegacy
     * process.patJetPartons
     * process.patJetsNewSlimmedJets
-    * process.MyImpactParameterTagInfos
-    * process.MyTrackCountingHighEffBJetTags
-    * process.MySecondaryVertexTagInfos
-    * process.MySimpleSecondaryVertexHighEffBJetTags
     * process.L1BTagAnalyzer
 )
 
 process.schedule = cms.Schedule(process.EcalEBtp_step,process.L1TrackTrigger_step,process.L1simulation_step,process.p,process.endjob_step) 
 
-## Define the EndPath
-process.output = cms.EndPath(
-    process.out
-)
+## Define the EndPath, if needed
+#process.output = cms.EndPath(
+#    process.out
+#)
 
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
@@ -261,5 +208,5 @@ from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEar
 process = customiseEarlyDelete(process)
 
 
-dump_file = open('dump.py','w')
-dump_file.write(process.dumpPython())
+#dump_file = open('dump.py','w')
+#dump_file.write(process.dumpPython())
