@@ -140,7 +140,7 @@ addJetCollection(
 
 process.unpackTV = cms.EDProducer('PATTrackAndVertexUnpacker',
  slimmedVertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
- additionalTracks= cms.InputTag("lostTracks"),
+ additionalTracks = cms.InputTag("lostTracks"),
  packedCandidates = cms.InputTag("packedPFCandidates"),
  slimmedSecondaryVertices = cms.InputTag("slimmedSecondaryVertices")
 )
@@ -196,10 +196,10 @@ process.p = cms.Path(
 
 process.schedule = cms.Schedule(process.EcalEBtp_step,process.L1TrackTrigger_step,process.L1simulation_step,process.p,process.endjob_step) 
 
-## Define the EndPath
-process.output = cms.EndPath(
-    process.out
-)
+## Define the EndPath, if needed
+#process.output = cms.EndPath(
+#    process.out
+#)
 
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
