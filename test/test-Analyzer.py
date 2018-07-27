@@ -134,39 +134,39 @@ addJetCollection(
                  explicitJTA = False,
                  svClustering = False,
                  #jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute']), 'Type-2'),
-                 btagInfos = ['impactParameterTagInfos','secondaryVertexTagInfos','softPFMuonsTagInfos','softPFElectronsTagInfos'],
-                 btagDiscriminators=['simpleSecondaryVertexHighEffBJetTags','simpleSecondaryVertexHighPurBJetTags','softPFMuonBJetTags','softPFElectronBJetTags']
+                 btagInfos = ['impactParameterTagInfos','secondaryVertexTagInfos','softPFMuonsTagInfos'],#,'softPFElectronsTagInfos'
+                 btagDiscriminators=['simpleSecondaryVertexHighEffBJetTags','simpleSecondaryVertexHighPurBJetTags','softPFMuonBJetTags']#,'softPFElectronBJetTags'
                  )
 
-process.unpackTV = cms.EDProducer('PATTrackAndVertexUnpacker',
- slimmedVertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
- additionalTracks = cms.InputTag("lostTracks"),
- packedCandidates = cms.InputTag("packedPFCandidates"),
- slimmedSecondaryVertices = cms.InputTag("slimmedSecondaryVertices")
-)
+process.unpackTV  = cms.EDProducer('PATTrackAndVertexUnpacker',
+                                   slimmedVertices  = cms.InputTag("offlineSlimmedPrimaryVertices"),
+                                   additionalTracks = cms.InputTag("lostTracks"),
+                                   packedCandidates = cms.InputTag("packedPFCandidates"),
+                                   slimmedSecondaryVertices = cms.InputTag("slimmedSecondaryVertices")
+                                   )
 
 process.patJetPartonsLegacy = cms.EDProducer("PartonSelector",
-    withLeptons = cms.bool(False),
-    src = cms.InputTag("genParticles")
+                                             withLeptons = cms.bool(False),
+                                             src = cms.InputTag("genParticles")
 )
 
 process.patJetPartonAssociationLegacy = cms.EDProducer("JetPartonMatcher",
-    jets    = cms.InputTag("ak4PFJetsCHS"),
-    partons = cms.InputTag("patJetPartonsLegacy"),
-    coneSizeToAssociate = cms.double(0.3),
-)
+                                                       jets    = cms.InputTag("ak4PFJetsCHS"),
+                                                       partons = cms.InputTag("patJetPartonsLegacy"),
+                                                       coneSizeToAssociate = cms.double(0.3),
+                                                       )
 
 process.patJetFlavourAssociationLegacy = cms.EDProducer("JetFlavourIdentifier",
-    srcByReference    = cms.InputTag("patJetPartonAssociationLegacy"),
-    physicsDefinition = cms.bool(False)
-)
+                                                        srcByReference    = cms.InputTag("patJetPartonAssociationLegacy"),
+                                                        physicsDefinition = cms.bool(False)
+                                                        )
 
 process.patJetPartons = cms.EDProducer('HadronAndPartonSelector',
-    src = cms.InputTag("generator"),
-    particles = cms.InputTag("genParticles"),
-    partonMode = cms.string("Auto"),
-    fullChainPhysPartons = cms.bool(True)
-)
+                                       src        = cms.InputTag("generator"),
+                                       particles  = cms.InputTag("genParticles"),
+                                       partonMode = cms.string("Auto"),
+                                       fullChainPhysPartons = cms.bool(True)
+                                       )
 
 process.jetTracksAssociatorAtVertexNewSlimmedJets.jets = cms.InputTag("ak4PFJetsCHS")
 process.jetTracksAssociatorAtVertexNewSlimmedJets.tracks = cms.InputTag("unpackTV")
@@ -178,11 +178,11 @@ process.load("L1Trigger.phase2L1BTagAnalyzer.phase2L1BTagAnalyzer_cfi")
 process.L1BTagAnalyzer.slimmedJets = cms.InputTag("patJetsNewSlimmedJets")
 
 process.TFileService = cms.Service("TFileService", 
-   fileName = cms.string("analyzer.root")
-)
+                                   fileName = cms.string("analyzer.root")
+                                   )
 
 ## Define a Path
-process.p = cms.Path(
+process.btaggingPath = cms.Path(
     process.pfCHS
     * process.ak4PFJetsCHS
     * process.unpackTV
@@ -194,7 +194,11 @@ process.p = cms.Path(
     * process.L1BTagAnalyzer
 )
 
-process.schedule = cms.Schedule(process.EcalEBtp_step,process.L1TrackTrigger_step,process.L1simulation_step,process.p,process.endjob_step) 
+process.schedule = cms.Schedule(process.EcalEBtp_step,
+                                process.L1TrackTrigger_step,
+                                process.L1simulation_step,
+                                process.btaggingPath,
+                                process.endjob_step) 
 
 ## Define the EndPath, if needed
 #process.output = cms.EndPath(
@@ -206,7 +210,6 @@ associatePatAlgosToolsTask(process)
 
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)
-
 
 #dump_file = open('dump.py','w')
 #dump_file.write(process.dumpPython())
