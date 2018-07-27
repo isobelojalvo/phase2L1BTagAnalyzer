@@ -134,8 +134,8 @@ addJetCollection(
                  explicitJTA = False,
                  svClustering = False,
                  #jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute']), 'Type-2'),
-                 btagInfos = ['impactParameterTagInfos','secondaryVertexTagInfos','softPFMuonsTagInfos'],#,'softPFElectronsTagInfos'
-                 btagDiscriminators=['simpleSecondaryVertexHighEffBJetTags','simpleSecondaryVertexHighPurBJetTags','softPFMuonBJetTags']#,'softPFElectronBJetTags'
+                 btagInfos = ['impactParameterTagInfos','secondaryVertexTagInfos'],#,'softPFElectronsTagInfos','softPFMuonsTagInfos'
+                 btagDiscriminators=['simpleSecondaryVertexHighEffBJetTags','simpleSecondaryVertexHighPurBJetTags']#,'softPFElectronBJetTags','softPFMuonBJetTags'
                  )
 
 process.unpackTV  = cms.EDProducer('PATTrackAndVertexUnpacker',
