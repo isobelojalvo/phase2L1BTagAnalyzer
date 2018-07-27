@@ -160,11 +160,11 @@ process.MySimpleSecondaryVertexHighEffBJetTags = process.pfSimpleSecondaryVertex
     tagInfos = cms.VInputTag(cms.InputTag("MySecondaryVertexTagInfos"))
 )
 
-## Output file
-process.out = cms.OutputModule("PoolOutputModule",
-    outputCommands = cms.untracked.vstring('keep *'), 
-    fileName = cms.untracked.string('outfile-2.root')
-)
+### Output file
+#process.out = cms.OutputModule("PoolOutputModule",
+#    outputCommands = cms.untracked.vstring('keep *'), 
+#    fileName = cms.untracked.string('outfile-2.root')
+#)
 
 # load the standard PAT config
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
@@ -179,8 +179,8 @@ addJetCollection(
                  explicitJTA = False,
                  svClustering = False,
                  #jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute']), 'Type-2'),
-                 btagInfos = ['impactParameterTagInfos','secondaryVertexTagInfos'],
-                 btagDiscriminators=['simpleSecondaryVertexHighEffBJetTags','simpleSecondaryVertexHighPurBJetTags']
+                 btagInfos = ['impactParameterTagInfos','secondaryVertexTagInfos','softPFMuonsTagInfos','softPFElectronsTagInfos'],
+                 btagDiscriminators=['simpleSecondaryVertexHighEffBJetTags','simpleSecondaryVertexHighPurBJetTags','softPFMuonBJetTags','softPFElectronBJetTags']
                  )
 
 process.unpackTV = cms.EDProducer('PATTrackAndVertexUnpacker',
@@ -240,10 +240,6 @@ process.p = cms.Path(
     * process.patJetFlavourAssociationLegacy
     * process.patJetPartons
     * process.patJetsNewSlimmedJets
-    * process.MyImpactParameterTagInfos
-    * process.MyTrackCountingHighEffBJetTags
-    * process.MySecondaryVertexTagInfos
-    * process.MySimpleSecondaryVertexHighEffBJetTags
     * process.L1BTagAnalyzer
 )
 
