@@ -115,24 +115,6 @@ process.ak4PFJetsCHS = ak4PFJets.clone(src = 'pfCHS')
 
 #################################################
 
-## Clone the existing TagInfo configurations and adapt them to MiniAOD input
-process.MyImpactParameterTagInfos = process.pfImpactParameterTagInfos.clone(
-    primaryVertex = cms.InputTag("offlineSlimmedPrimaryVertices"),
-    candidates = cms.InputTag("packedPFCandidates"),
-    jets = cms.InputTag("ak4PFJetsCHS") # use the above-defined PF jets as input
-)
-process.MySecondaryVertexTagInfos = process.pfSecondaryVertexTagInfos.clone(
-    trackIPTagInfos = cms.InputTag("MyImpactParameterTagInfos") # use the above IP TagInfos as input
-)
-
-## Clone the existing b-tagger configurations and use the above TagInfos as input
-process.MyTrackCountingHighEffBJetTags = process.pfTrackCountingHighEffBJetTags.clone(
-    tagInfos = cms.VInputTag(cms.InputTag("MyImpactParameterTagInfos"))
-)
-process.MySimpleSecondaryVertexHighEffBJetTags = process.pfSimpleSecondaryVertexHighEffBJetTags.clone(
-    tagInfos = cms.VInputTag(cms.InputTag("MySecondaryVertexTagInfos"))
-)
-
 ### Output file
 #process.out = cms.OutputModule("PoolOutputModule",
 #    outputCommands = cms.untracked.vstring('keep *'), 
