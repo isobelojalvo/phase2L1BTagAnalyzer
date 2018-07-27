@@ -126,9 +126,11 @@ class phase2L1BTagAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResourc
 
       TTree* efficiencyTree;
 
+      int hadronFlavor;
       double recoPt, recoEta, recoPhi; 
       double recoMuPt;
       double recoTk1IP, recoTk2IP, recoTk3IP, recoTk4IP; 
+      double recoTk1IP3D;
       int recoFlavor;
       int run, lumi, event;
       double l1Pt, l1Eta, l1Phi;
@@ -167,13 +169,18 @@ phase2L1BTagAnalyzer::phase2L1BTagAnalyzer(const edm::ParameterSet& cfg):
 
   edm::Service<TFileService> fs;
   efficiencyTree = fs->make<TTree>("efficiencyTree", "Reco Jet Tree");
-  efficiencyTree->Branch("run",    &run,     "run/I");
-  efficiencyTree->Branch("lumi",   &lumi,    "lumi/I");
-  efficiencyTree->Branch("event",  &event,   "event/I");
+  efficiencyTree->Branch("run",          &run,         "run/I");
+  efficiencyTree->Branch("lumi",         &lumi,        "lumi/I");
+  efficiencyTree->Branch("event",        &event,       "event/I");
   
-  efficiencyTree->Branch("recoPt",  &recoPt,   "recoPt/D");
-  efficiencyTree->Branch("recoEta", &recoEta,   "recoEta/D");
-  efficiencyTree->Branch("recoPhi", &recoPhi,   "recoPhi/D");
+  efficiencyTree->Branch("recoPt",       &recoPt,      "recoPt/D");
+  efficiencyTree->Branch("recoEta",      &recoEta,     "recoEta/D");
+  efficiencyTree->Branch("recoPhi",      &recoPhi,     "recoPhi/D");
+
+  efficiencyTree->Branch("hadronFlavor", &hadronFlavor, "hadronFlavor/I");
+
+  efficiencyTree->Branch("recoTk1IP",     &recoTk1IP,   "recoTk1IP/D");
+  efficiencyTree->Branch("recoTk2IP",     &recoTk2IP,   "recoTk2IP/D");
 
   efficiencyTree->Branch("l1Pt",  &l1Pt,   "l1Pt/D");
   efficiencyTree->Branch("l1Eta", &l1Eta,   "l1Eta/D");
@@ -237,6 +244,7 @@ phase2L1BTagAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
     }
 
+  //sort the tracks by transverse momentum
   std::sort(l1Tracks.begin(), l1Tracks.end(), [](TTTrack< Ref_Phase2TrackerDigi_ > i,TTTrack< Ref_Phase2TrackerDigi_ > j){return(i.getMomentum().perp() > j.getMomentum().perp());});   
    
    // get reco jets
@@ -256,35 +264,38 @@ phase2L1BTagAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
       recoTk2IP      = -99;
       recoTk3IP      = -99;
       recoTk4IP      = -99;
+      hadronFlavor   = -99;
 
       recoPt  = jet->pt();
       recoEta = jet->eta();
       recoPhi = jet->phi();
 
-      // initialize b-tag info
-      // if TagInfo present
-
-      //dummy check to be removed
+      // gen level hadron flavor
+      hadronFlavor = jet->hadronFlavour();
+      //Uncomment only for debugging
       //for(auto string:jet->tagInfoLabels())
       //std::cout<<string<<std::endl;
 
-      
+      // initialize b-tag info
+      // if TagInfo present
       std::string tagInfoString = "impactParameter";
       if( jet->hasTagInfo(tagInfoString) ) 
 	{
-
-	  
-	  const TrackIPTagInfo *ipTagInfo =  jet->tagInfoTrackIP(tagInfoString);
+	  const TrackIPTagInfo *ipTagInfo = jet->tagInfoTrackIP(tagInfoString);
 	  const edm::RefVector<std::vector<reco::Track> > selectedTracks( ipTagInfo->selectedTracks() );
 	  unsigned int trackSize = ipTagInfo->selectedTracks().size();
-	  //std::cout<<"selected tracks size "<<ipTagInfo->selectedTracks().size()<<std::endl;
 
 	  //find IP definition in RecoBTag/BTagTools/src/SignedTransverseImpactParameter.cc
 	  if(trackSize>0)
 	    {
-	      recoTk1IP = ipTagInfo->impactParameterData()[0].ip2d.value();
-	      std::cout<<"recoTk1IP "<<recoTk1IP<<std::endl;
-	      //recoTk1IP = ipTagInfo->selectedTracks().at(0).dxy(pv->position());
+	      recoTk1IP    = ipTagInfo->impactParameterData()[0].ip2d.value();
+	      recoTk1IP3D  = ipTagInfo->impactParameterData()[0].ip3d.value();
+	      //consider adding track DXY
+	      //recoTk1DXY = ipTagInfo->selectedTracks().at(0).dxy(pv->position());
+	    }
+	  if(trackSize>1)
+	    {
+	      recoTk2IP = ipTagInfo->impactParameterData()[1].ip2d.value();
 	    }
 	}
       else
@@ -292,9 +303,6 @@ phase2L1BTagAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
       efficiencyTree->Fill();
    }
-   // fill gen-level quantities
-
-   // get level 1 jet, level 1 muons
 
    //Keep this for now, will be useful if we want to compare L1Tracks to Reco Tracks
    /*  
