@@ -181,6 +181,7 @@ phase2L1BTagAnalyzer::phase2L1BTagAnalyzer(const edm::ParameterSet& cfg):
 
   efficiencyTree->Branch("recoTk1IP",     &recoTk1IP,   "recoTk1IP/D");
   efficiencyTree->Branch("recoTk2IP",     &recoTk2IP,   "recoTk2IP/D");
+  efficiencyTree->Branch("recoTk3IP",     &recoTk3IP,   "recoTk3IP/D");
 
   efficiencyTree->Branch("l1Pt",  &l1Pt,   "l1Pt/D");
   efficiencyTree->Branch("l1Eta", &l1Eta,   "l1Eta/D");
@@ -296,6 +297,10 @@ phase2L1BTagAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	  if(trackSize>1)
 	    {
 	      recoTk2IP = ipTagInfo->impactParameterData()[1].ip2d.value();
+	    }
+	  if(trackSize>2)
+	    {
+	      recoTk3IP = ipTagInfo->impactParameterData()[2].ip2d.value();
 	    }
 	}
       else
