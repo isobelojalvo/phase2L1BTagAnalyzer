@@ -15,6 +15,8 @@ git cms-merge-topic -u rekovic:Tracklet-10_1_0_pre3-from-skinnari
 
 git cms-addpkg L1Trigger/L1TCommon
 
+cd L1Trigger
+
 git clone git@github.com:isobelojalvo/phase2L1BTagAnalyzer.git
 
 scram b -j 8
