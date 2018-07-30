@@ -1,0 +1,33 @@
+## Batch job file (batch file) for running test-Analyzer.py
+# 
+#  Usage:
+#  1. Obtain the needed grid proxy at the terminal:
+#       % voms-proxy-init --voms cms
+#  2. Copy the resulting proxy to an area in lfs, for example your home directory:
+#       % cp /tmp/x509up_uXXXX  /afs/cern.ch/user/u/username/
+#  3. If you are submitting a job with "bsub myscript.sh" (aka this file), set the
+#     environment variable 
+#       "export X509_USER_PROXY=/afs/cern.ch/user/u/username/x509up_uXXXX".
+#  4. Submit the job to the LSF system (if using defualt queue options) with the
+#     following command:
+#       bsub -J job_name -o /mydir/output_file -e /mydir/error_file < /mydir/job.job
+#  5. Check the job status using
+#       bjobs
+#  6. If you want to kill a job you can use
+#       bkill JOB_ID
+#     or, to kill ALL running jobs,
+#       bkill 0
+#
+#
+#  Submit to the LSF system using:
+#      bsub -J test-Analyzer -o /afs/cern.ch/work/s/skkwan/public/triggerDevel/CMSSW_10_1_5/src/L1Trigger/phase2L1BTagAnalyzer/test/STDOUT -e /afs/cern.ch/work/s/skkwan/public/triggerDevel/CMSSW_10_1_5/src/L1Trigger/phase2L1BTagAnalyzer/test/STDERR < /afs/cern.ch/work/s/skkwan/public/triggerDevel/CMSSW_10_1_5/src/L1Trigger/phase2L1BTagAnalyzer/test/test-Analyzer.job
+
+#Set the analyzer directory
+CURRDIR=/afs/cern.ch/work/s/skkwan/public/triggerDevel/CMSSW_10_1_5/src/L1Trigger/phase2L1BTagAnalyzer/test
+
+#Set environment variable telling the batch farm where to look for the valid grid proxy
+export X509_USER_PROXY=/afs/cern.ch/work/s/skkwan/public/triggerDevel/CMSSW_10_1_5/src/L1Trigger/phase2L1BTagAnalyzer/test/x509up_u103765
+
+#Run the analyzer
+cmsRun /afs/cern.ch/work/s/skkwan/public/triggerDevel/CMSSW_10_1_5/src/L1Trigger/phase2L1BTagAnalyzer/test/test-Analyzer.py
+
