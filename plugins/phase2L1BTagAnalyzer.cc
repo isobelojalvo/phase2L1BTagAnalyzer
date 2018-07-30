@@ -135,11 +135,11 @@ class phase2L1BTagAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResourc
       double muRatio, muRatioRel, muSIP2Dsig, muSIP3Dsig;
       int recoFlavor;
       int run, lumi, event;
-      double l1Pt, l1Eta, constants;
+      double l1Pt, l1Eta, l1Phi;
 };
 
 //
-// l1Phi, enums and typedefs
+// constants, enums and typedefs
 //
 
 //
@@ -345,7 +345,7 @@ phase2L1BTagAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	  int nSM = (jet->hasTagInfo(tagInfoString) ? softPFMuTagInfo->leptons() : 0);
 	  if( nSM > 0 )
     {
-	    muPt  = softPFMuTagInfo->lepton(0)->pt();
+      muPt  = softPFMuTagInfo->lepton(0)->pt();
       muEta = softPFMuTagInfo->lepton(0)->eta();
       muPhi = softPFMuTagInfo->lepton(0)->phi();
       muPtRel = (softPFMuTagInfo->properties(0).ptRel);
