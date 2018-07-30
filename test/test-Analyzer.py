@@ -134,8 +134,8 @@ addJetCollection(
                  explicitJTA = False,
                  svClustering = False,
                  #jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute']), 'Type-2'),
-                 btagInfos = ['impactParameterTagInfos','secondaryVertexTagInfos'],#,'softPFElectronsTagInfos','softPFMuonsTagInfos'
-                 btagDiscriminators=['simpleSecondaryVertexHighEffBJetTags','simpleSecondaryVertexHighPurBJetTags']#,'softPFElectronBJetTags','softPFMuonBJetTags'
+                 btagInfos = ['impactParameterTagInfos','secondaryVertexTagInfos','softPFMuonsTagInfos'],#,'softPFElectronsTagInfos'
+                 btagDiscriminators=['simpleSecondaryVertexHighEffBJetTags','simpleSecondaryVertexHighPurBJetTags','softPFMuonBJetTags']#,'softPFElectronBJetTags'
                  )
 
 process.unpackTV  = cms.EDProducer('PATTrackAndVertexUnpacker',
@@ -171,6 +171,9 @@ process.patJetPartons = cms.EDProducer('HadronAndPartonSelector',
 process.jetTracksAssociatorAtVertexNewSlimmedJets.jets = cms.InputTag("ak4PFJetsCHS")
 process.jetTracksAssociatorAtVertexNewSlimmedJets.tracks = cms.InputTag("unpackTV")
 process.impactParameterTagInfosNewSlimmedJets.primaryVertex = cms.InputTag("unpackTV")
+process.softPFMuonsTagInfosNewSlimmedJets.primaryVertex = cms.InputTag("unpackTV")
+process.softPFMuonBJetTagsNewSlimmedJets.tagInfos = cms.VInputTag(cms.InputTag("softPFMuonsTagInfosNewSlimmedJets"))
+
 ## the key to adding the 
 process.patJetsNewSlimmedJets.addTagInfos = cms.bool(True)
 
@@ -190,6 +193,8 @@ process.btaggingPath = cms.Path(
     * process.patJetPartonAssociationLegacy
     * process.patJetFlavourAssociationLegacy
     * process.patJetPartons
+    * process.softPFMuonsTagInfosNewSlimmedJets
+    * process.softPFMuonBJetTagsNewSlimmedJets
     * process.patJetsNewSlimmedJets
     * process.L1BTagAnalyzer
 )
@@ -211,5 +216,5 @@ associatePatAlgosToolsTask(process)
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)
 
-#dump_file = open('dump.py','w')
-#dump_file.write(process.dumpPython())
+dump_file = open('dump.py','w')
+dump_file.write(process.dumpPython())

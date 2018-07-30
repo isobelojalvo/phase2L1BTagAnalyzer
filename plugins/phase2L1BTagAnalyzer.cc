@@ -131,6 +131,7 @@ class phase2L1BTagAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResourc
       double recoMuPt;
       double recoTk1IP, recoTk2IP, recoTk3IP, recoTk4IP; 
       double recoTk1IP3D;
+      double muPt, muEta, muPhi, muPtRel, muDeltaR, muSIP2D, muSIP3D;
       int recoFlavor;
       int run, lumi, event;
       double l1Pt, l1Eta, l1Phi;
@@ -297,6 +298,28 @@ phase2L1BTagAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	    {
 	      recoTk2IP = ipTagInfo->impactParameterData()[1].ip2d.value();
 	    }
+	}
+      else
+	std::cout<<"jet does not have "<<tagInfoString<<std::endl;
+
+      muPt     = -99;
+      muEta    = -99;
+      muPhi    = -99;
+      muPtRel  = -99;
+      muDeltaR = -99;
+      muSIP2D  = -99;
+      muSIP3D  = -99;
+      // add more muon variables: https://github.com/cms-btv-pog/RecoBTag-PerformanceMeasurements/blob/9_4_X/plugins/BTagAnalyzer.cc#L2595-L2607
+
+      tagInfoString = "softPFMuons";
+      if( jet->hasTagInfo(tagInfoString) ) 
+	{
+	  const reco::CandSoftLeptonTagInfo *softPFMuTagInfo = jet->tagInfoCandSoftLepton(tagInfoString);
+	  int nSM = (jet->hasTagInfo(tagInfoString) ? softPFMuTagInfo->leptons() : 0);
+	  if(nSM>0){
+	    muPt = softPFMuTagInfo->lepton(0)->pt();
+	  }
+	  //std::cout<<"muPt "<<muPt<<std::endl;
 	}
       else
 	std::cout<<"jet does not have "<<tagInfoString<<std::endl;
