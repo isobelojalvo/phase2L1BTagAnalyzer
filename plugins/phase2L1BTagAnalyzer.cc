@@ -131,7 +131,8 @@ class phase2L1BTagAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResourc
       double recoMuPt;
       double recoTk1IP, recoTk2IP, recoTk3IP, recoTk4IP; 
       double recoTk1IP3D;
-      double muPt, muEta, muPhi, muPtRel, muDeltaR, muSIP2D, muSIP3D;
+      double muPt, muEta, muPhi, muPtRel, muDeltaR, muSIP2D, muSIP3D
+      double muRatio, muRatioRel, muSIP2Dsig, muSIP3Dsig;
       int recoFlavor;
       int run, lumi, event;
       double l1Pt, l1Eta, l1Phi;
@@ -182,12 +183,26 @@ phase2L1BTagAnalyzer::phase2L1BTagAnalyzer(const edm::ParameterSet& cfg):
 
   efficiencyTree->Branch("recoTk1IP",     &recoTk1IP,   "recoTk1IP/D");
   efficiencyTree->Branch("recoTk2IP",     &recoTk2IP,   "recoTk2IP/D");
+  efficiencyTree->Branch("recoTk3IP",     &recoTk3IP,   "recoTk3IP/D");
+  efficiencyTree->Branch("recoTk4IP",     &recoTk4IP,   "recoTk4IP/D");
 
   efficiencyTree->Branch("l1Pt",  &l1Pt,   "l1Pt/D");
   efficiencyTree->Branch("l1Eta", &l1Eta,   "l1Eta/D");
   efficiencyTree->Branch("l1Phi", &l1Phi,   "l1Phi/D");
 
+  efficiencyTree->Branch("muPt",  &muPt,  "muPt/D");
+  efficiencyTree->Branch("muEta", &muEta, "muEta/D");
+  efficiencyTree->Branch("muPhi", &muPhi, "muPhi/D");
 
+  efficiencyTree->Branch("muPtRel",    &muPtRel,    "muPtRel/D");
+  efficiencyTree->Branch("muRatio",    &muRatio,    "muRatio/D");
+  efficiencyTree->Branch("muRatioRel", &muRatioRel, "muRatioRel/D");
+  efficiencyTree->Branch("muDeltaR",   &muDeltaR,   "muDeltaR/D");
+
+  efficiencyTree->Branch("muSIP2D", &muSIP2D, "muSIP2D/D");
+  efficiencyTree->Branch("muSIP3D", &muSIP3D, "muSIP3D/D");
+  efficiencyTree->Branch("muSIP2Dsig", &muSIP2Dsig, "muSIP2Dsig/D");
+  efficiencyTree->Branch("muSIP3Dsig", &muSIP3Dsig, "muSIP3Dsig/D");
 }
 
 
@@ -224,7 +239,7 @@ phase2L1BTagAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
   lumi  = iEvent.id().luminosityBlock();
   event = iEvent.id().event();
 
-   //get L1 quantities  
+  // get L1 quantities  
   // L1 tracks  
   std::vector<TTTrack< Ref_Phase2TrackerDigi_ > > l1Tracks;
   edm::Handle< std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > > l1trackHandle;
@@ -298,26 +313,50 @@ phase2L1BTagAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	    {
 	      recoTk2IP = ipTagInfo->impactParameterData()[1].ip2d.value();
 	    }
+	  if(trackSize>2)
+	    {
+	      recoTk3IP = ipTagInfo->impactParameterData()[2].ip2d.value();
+	    }
+	  if(trackSize>3)
+	    {
+	      recoTk4IP = ipTagInfo->impactParameterData()[3].ip2d.value();
+	    }
 	}
       else
 	std::cout<<"jet does not have "<<tagInfoString<<std::endl;
 
-      muPt     = -99;
-      muEta    = -99;
-      muPhi    = -99;
-      muPtRel  = -99;
-      muDeltaR = -99;
+      // muon variables:  https://github.com/cms-btv-pog/RecoBTag-PerformanceMeasurements/blob/9_4_X/plugins/BTagAnalyzer.cc#L2595-L2607
+      muPt  = -99;
+      muEta = -99;
+      muPhi = -99;
+      muPtRel    = -99;
+      muRatio    = -99;
+      muRatioRel = -99;
+      muDeltaR   = -99;
       muSIP2D  = -99;
       muSIP3D  = -99;
-      // add more muon variables: https://github.com/cms-btv-pog/RecoBTag-PerformanceMeasurements/blob/9_4_X/plugins/BTagAnalyzer.cc#L2595-L2607
+      muSIP2Dsig = -99;
+      muSIP3Dsig = -99;
 
       tagInfoString = "softPFMuons";
       if( jet->hasTagInfo(tagInfoString) ) 
 	{
 	  const reco::CandSoftLeptonTagInfo *softPFMuTagInfo = jet->tagInfoCandSoftLepton(tagInfoString);
 	  int nSM = (jet->hasTagInfo(tagInfoString) ? softPFMuTagInfo->leptons() : 0);
-	  if(nSM>0){
-	    muPt = softPFMuTagInfo->lepton(0)->pt();
+	  if( nSM > 0 )
+    {
+      muPt  = softPFMuTagInfo->lepton(0)->pt();
+      muEta = softPFMuTagInfo->lepton(0)->eta();
+      muPhi = softPFMuTagInfo->lepton(0)->phi();
+      muPtRel = (softPFMuTagInfo->properties(0).ptRel);
+      muRatio = (softPFMuTagInfo->properties(0).ratio);
+      muRatioRel = (softPFMuTagInfo->properties(0).ratioRel);
+      muDeltaR = (softPFMuTagInfo->properties(0).deltaR);
+
+      muSIP3D = (softPFMuTagInfo->properties(0).sip3d);
+      muSIP2D = (softPFMuTagInfo->properties(0).sip2d);
+      muSIP3Dsig = (softPFMuTagInfo->properties(0).sip3dsig);
+      muSIP2Dsig = (softPFMuTagInfo->properties(0).sip2dsig);
 	  }
 	  //std::cout<<"muPt "<<muPt<<std::endl;
 	}
