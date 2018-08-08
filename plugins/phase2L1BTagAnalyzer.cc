@@ -289,6 +289,7 @@ phase2L1BTagAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
   if(!iEvent.getByToken( MiniMuonsToken_, miniMuons))
     std::cout<<"No miniAOD muons found"<<std::endl;
 
+  //std::cout<<"looping over jets"<<std::endl;
   for( std::vector<pat::Jet>::const_iterator jet = miniJets->begin(); jet != miniJets->end(); ++jet )
     {
 
@@ -296,10 +297,11 @@ phase2L1BTagAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
       //https://github.com/cms-btv-pog/RecoBTag-PerformanceMeasurements/blob/9_4_X/plugins/BTagAnalyzer.cc
       //Instead we will just find the muons in the jets
       for(unsigned int id=0, nd=jet->numberOfDaughters(); id<nd; ++id) {
+
 	//std::cout<<"id "<<id<<std::endl;
 	edm::Ptr<reco::Candidate> lepPtr = jet->daughterPtr(id);
 	if(std::abs(lepPtr->pdgId())!=13) continue;
-	
+	//std::cout<<"got lep ptr, looping over muons"<<std::endl;
 	for(unsigned int im=0, nm= miniMuons->size(); im<nm; ++im) { // --- Begin loop on muons
           const pat::Muon patmuon= miniMuons->at(im);
 	  if(patmuon.originalObjectRef()==lepPtr) {
@@ -310,7 +312,7 @@ phase2L1BTagAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	    Measurement1D ip2d    = IPTools::signedTransverseImpactParameter(transientTrack, GlobalVector(jet->px(), jet->py(), jet->pz()), *pv).second;
 	    // soft lepton variables go here, see:
 	    // https://github.com/cms-sw/cmssw/blob/a1a699103d53ed00ae87f2a2578dd7e4b6bd0b5b/RecoBTag/SoftLepton/plugins/SoftPFMuonTagInfoProducer.cc#L121-L135
-	    std::cout<<"Found the muon ip2d: "<<ip2d.value()<<std::endl;
+	    //std::cout<<"Found the muon ip2d: "<<ip2d.value()<<std::endl;
 	    break;
 	  }
 	}
