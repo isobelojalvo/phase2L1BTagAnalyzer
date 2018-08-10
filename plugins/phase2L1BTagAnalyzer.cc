@@ -358,10 +358,10 @@ phase2L1BTagAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	    {
 	      recoTk1IP    = ipTagInfo->impactParameterData()[0].ip2d.value();
 
-	      if(recoTk1IP>0.1){//default saturated value: meaning definitely b-jet like!
-		recoTk1IP_uint = 0xFFFF;}
+	      if(abs(recoTk1IP)>0.1){//default saturated value: meaning definitely b-jet like!
+		recoTk1IP_uint = 0xFF;}
 	      else{
-		recoTk1IP_uint = (unsigned int)(recoTk1IP/0.001); 	      //using 0.001 as the LSB (Least Significant Bit)
+		recoTk1IP_uint = (unsigned int)(abs(recoTk1IP)/0.0004); 	      //using 0.001 as the LSB (Least Significant Bit)
 	      }
 	      std::cout<<"recoTk1IP: "<<std::dec<< recoTk1IP<< " recoTk1IP_uint: "<< std::hex<<recoTk1IP_uint<<std::endl;
 	      recoTk1IP3D  = ipTagInfo->impactParameterData()[0].ip3d.value();
